@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KKK999 live - Apps on Google Play</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#01875f">
+
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+    <style>
+        :root {
+            --primary-blue: #01875f;
+            --primary-dark: #01694a;
+            --secondary-text: #5f6368;
+            --background-color: #ffffff;
+            --divider-color: #e8eaed;
+            --header-height: 64px;
+        }
+        body {
+            font-family: 'Roboto', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--background-color);
+            color: #202124;
+            -webkit-tap-highlight-color: transparent;
+            overflow-x: hidden;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 24px;
+            padding-bottom: 50px;
+            padding-top: var(--header-height); 
+        }
+        
+        /* Interactive Blurry Header */
+        header {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: var(--header-height);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 24px;
+            background-color: rgba(255, 255, 255, 0.85); 
+            backdrop-filter: blur(12px); 
+            -webkit-backdrop-filter: blur(12px); 
+            z-index: 100;
+            border-bottom: 1px solid transparent;
+            transition: all 0.3s ease;
+        }
+        .header-scrolled { border-bottom: 1px solid var(--divider-color); box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .header-left { display: flex; align-items: center; }
+        .google-play-text { font-size: 20px; font-weight: 500; color: #5f6368; margin-left: 16px; }
+        .header-icons svg { fill: #5f6368; margin-left: 20px; }
+        
+        /* Sticky Mini Install Bar */
+        .sticky-install-bar {
+            position: fixed; top: -80px; left: 0; right: 0; height: 64px;
+            background: white; z-index: 99; display: flex; align-items: center;
+            justify-content: space-between; padding: 0 24px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08); transition: top 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        .sticky-install-bar.visible { top: var(--header-height); }
+        .sticky-left { display: flex; align-items: center; gap: 12px; }
+        .sticky-logo { width: 36px; height: 36px; border-radius: 8px; }
+        .sticky-title { font-weight: 500; font-size: 14px; }
+        .sticky-btn {
+            background: var(--primary-blue); color: white; border: none; padding: 8px 20px;
+            border-radius: 20px; font-weight: 500; font-size: 14px; text-decoration: none;
+        }
+
+        .top-dev-badge {
+            display: flex; align-items: center; color: #5f6368; font-size: 12px;
+            font-weight: bold; border: 1px solid #dadce0; padding: 4px 8px;
+            border-radius: 4px; margin-bottom: 16px; width: fit-content;
+        }
+        .top-dev-badge span { margin-right: 4px; font-size: 14px; }
+        
+        .app-header { display: flex; align-items: flex-start; margin-top: 20px; }
+        .app-logo {
+            width: 72px; height: 72px; border-radius: 16px; margin-right: 24px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .app-info h1 { font-size: 24px; font-weight: 500; margin: 0 0 4px 0; }
+        .publisher { color: var(--primary-blue); text-decoration: none; font-weight: 500; font-size: 14px; }
+        .ads-info { font-size: 12px; color: var(--secondary-text); margin-top: 4px; }
+        
+        .stats-bar { display: flex; align-items: center; margin: 24px 0; padding: 0 12px; }
+        .stat-item { flex: 1; text-align: center; position: relative; }
+        .stat-item:not(:last-child)::after {
+            content: ''; position: absolute; right: 0; top: 50%;
+            transform: translateY(-50%); height: 24px; width: 1px; background-color: var(--divider-color);
+        }
+        .stat-value { font-weight: 500; font-size: 14px; display: flex; align-items: center; justify-content: center; }
+        .stat-label { font-size: 12px; color: var(--secondary-text); margin-top: 4px; }
+        
+        /* Premium Install Button */
+        .install-container { margin: 24px 0; perspective: 1000px; }
+        .install-button {
+            display: block; width: 100%; padding: 12px 0;
+            background-color: var(--primary-blue); color: white; text-align: center;
+            text-decoration: none; border-radius: 24px; font-weight: 500; font-size: 16px;
+            box-shadow: 0 4px 10px rgba(1, 135, 95, 0.3);
+            cursor: pointer;
+        }
+
+        .screenshots-container {
+            display: flex; overflow-x: auto; scroll-snap-type: x mandatory;
+            margin: 24px -24px; padding: 0 24px 10px 24px; gap: 12px;
+            -webkit-overflow-scrolling: touch; scrollbar-width: none;
+        }
+        .screenshots-container::-webkit-scrollbar { display: none; }
+        .screenshot {
+            flex: 0 0 auto; width: 110px; height: 196px;
+            border-radius: 12px; overflow: hidden; scroll-snap-align: start;
+            border: 1px solid var(--divider-color); background-color: #f8f9fa;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .screenshot img { width: 100%; height: 100%; object-fit: cover; }
+        
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin: 24px 0 12px 0; }
+        .section-header h2 { font-size: 18px; font-weight: 500; margin: 0; }
+        .arrow-icon { font-size: 20px; color: var(--secondary-text); }
+        .text-content { font-size: 14px; color: var(--secondary-text); line-height: 1.5; }
+        
+        .tags { display: flex; flex-wrap: wrap; margin-top: 16px; }
+        .tag {
+            font-size: 13px; color: var(--secondary-text); border: 1px solid var(--divider-color);
+            padding: 6px 12px; border-radius: 16px; margin: 0 8px 8px 0; display: inline-block;
+        }
+        
+        .rating-summary { margin-top: 10px; }
+        .big-rating { font-size: 48px; font-weight: 400; color: #202124; }
+        .review-item { margin-top: 24px; padding-bottom: 24px; border-bottom: 1px solid #f1f3f4; }
+        .reviewer-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+        .reviewer-info { display: flex; align-items: center; }
+        .reviewer-avatar {
+            width: 32px; height: 32px; border-radius: 50%; background-color: #8e24aa; 
+            color: white; display: flex; align-items: center; justify-content: center;
+            font-weight: 500; margin-right: 12px; font-size: 14px;
+        }
+        .reviewer-name { font-size: 14px; font-weight: 500; color: #202124; }
+        .review-meta { display: flex; align-items: center; margin-bottom: 8px; }
+        .stars { color: var(--primary-blue); font-size: 12px; margin-right: 8px; }
+        .review-date { font-size: 12px; color: var(--secondary-text); }
+        .review-text { font-size: 14px; color: var(--secondary-text); line-height: 1.5; }
+        
+        .data-safety-card {
+            border: 1px solid var(--divider-color); border-radius: 8px;
+            padding: 16px; margin-top: 12px;
+        }
+        .ds-item { display: flex; align-items: flex-start; margin-bottom: 12px; }
+        .ds-icon { margin-right: 12px; width: 20px; text-align: center; }
+        .ds-text { font-size: 14px; color: #5f6368; }
+
+        .gsap-reveal, .gsap-screenshot, .gsap-fade-up { opacity: 0; visibility: hidden; }
+    </style>
+</head>
+<body>
+
+    <header id="main-header">
+        <div class="header-left gsap-header">
+            <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0z" fill="none"/><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+            <span class="google-play-text">Google Play</span>
+        </div>
+        <div class="header-icons gsap-header">
+            <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0z" fill="none"/><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0z" fill="none"/><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+        </div>
+    </header>
+
+    <div class="sticky-install-bar" id="sticky-bar">
+        <div class="sticky-left">
+            <img src="logo1.png" alt="Logo" class="sticky-logo" onerror="this.src='logo1.jpg'">
+            <div class="sticky-title">KKK999 live</div>
+        </div>
+        <a href="https://kkk999.live/kkk999.apk" class="sticky-btn">ইনস্টল</a>
+    </div>
+
+    <div class="container">
+        <section class="app-header">
+            <img src="logo1.png" alt="App Logo" class="app-logo gsap-reveal" onerror="this.src='logo1.jpg'">
+            <div class="app-info">
+                <h1 class="gsap-reveal">KKK999 live</h1>
+                <a href="#" class="publisher gsap-reveal">Astra</a>
+                <div class="ads-info gsap-reveal">ইন-অ্যাপ পারচেজ</div>
+            </div>
+        </section>
+
+        <section class="stats-bar">
+            <div class="stat-item gsap-reveal">
+                <div class="stat-value">4.8 <span>★</span></div>
+                <div class="stat-label">47K রিভিউ</div>
+            </div>
+            <div class="stat-item gsap-reveal">
+                <div class="stat-value">5M+</div>
+                <div class="stat-label">ডাউনলোড</div>
+            </div>
+            <div class="stat-item gsap-reveal">
+                <div class="stat-value">13+</div>
+                <div class="stat-label">BETTING</div>
+            </div>
+        </section>
+
+        <section class="install-container" id="main-install-section">
+            <a class="install-button gsap-reveal" id="main-btn">ইনস্টল করুন</a>
+        </section>
+
+        <section class="screenshots-container">
+            <div class="screenshot gsap-screenshot"><img src="image1.png" alt="Screen 1"></div>
+            <div class="screenshot gsap-screenshot"><img src="image2.png" alt="Screen 2"></div>
+            <div class="screenshot gsap-screenshot"><img src="image3.png" alt="Screen 3"></div>
+            <div class="screenshot gsap-screenshot"><img src="image4.png" alt="Screen 4"></div>
+            <div class="screenshot gsap-screenshot"><img src="image5.png" alt="Screen 5"></div>
+            <div class="screenshot gsap-screenshot"><img src="image6.png" alt="Screen 6"></div>
+            <div class="screenshot gsap-screenshot"><img src="image7.png" alt="Screen 7"></div>
+            <div class="screenshot gsap-screenshot"><img src="image8.png" alt="Screen 8"></div>
+        </section>
+
+        <section class="about-app">
+            <div class="section-header gsap-fade-up">
+                <h2>এই অ্যাপটি সম্পর্কে</h2>
+                <span class="arrow-icon">→</span>
+            </div>
+            <p class="text-content gsap-fade-up">
+                KKK999 হল বাংলাদেশের শীর্ষ অনলাইন ক্রিকেট বেটিং ও ক্যাসিনো সাইট। লাইভ ক্যাসিনো, স্লট গেমস, দ্রুত পেমেন্ট ও বিশাল বোনাস সহ উপভোগ করুন। এখনই যোগ দিন ও জয়ী হোন!
+            </p>
+            
+            <div class="section-header gsap-fade-up" style="margin-top:20px;">
+                <h2>আপডেট হয়েছে</h2>
+            </div>
+            
+            <div class="tags gsap-fade-up">
+                <span class="tag">ASTRA</span>
+                <span class="tag">বাংলাদেশ বেটিং সাইট</span>
+                <span class="tag">ক্রিকেট বেটিং বাংলাদেশ</span>
+                <span class="tag">অনলাইন ক্যাসিনো</span>
+                <span class="tag">লাইভ ক্যাসিনো</span>
+                <span class="tag">স্লট গেমস</span>
+                <span class="tag">রিয়েল মানি বেটিং</span>
+                <span class="tag">BPL বেটিং</span>
+                <span class="tag">ক্যাসিনো বোনাস</span>
+            </div>
+        </section>
+
+        <section class="data-safety gsap-fade-up">
+            <div class="section-header">
+                <h2>ডেটা সুরক্ষা</h2>
+                <span class="arrow-icon">→</span>
+            </div>
+            <p class="text-content">
+                ডেভেলপাররা কীভাবে আপনার ডেটা সংগ্রহ এবং শেয়ার করে তা বোঝার মাধ্যমে সুরক্ষা শুরু হয়। ডেটা গোপনীয়তা এবং নিরাপত্তার অনুশীলনগুলি আপনার ব্যবহার, অঞ্চল এবং বয়সের উপর ভিত্তি করে পরিবর্তিত হতে পারে।
+            </p>
+            
+            <div class="top-dev-badge" style="margin-top: 16px;">
+                <span>💋</span> ASTRA 
+            </div>
+
+            <div class="data-safety-card">
+                <div class="ds-item">
+                    <div class="ds-icon">🔒</div>
+                    <div class="ds-text">ট্রানজিটে ডেটা এনক্রিপ্ট করা হয়েছে</div>
+                </div>
+                <div class="ds-item">
+                    <div class="ds-icon">🗑️</div>
+                    <div class="ds-text">আপনি ডেটা মুছে ফেলার অনুরোধ করতে পারেন</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="reviews">
+            <div class="section-header gsap-fade-up">
+                <h2>রেটিং এবং রিভিউ</h2>
+                <span class="arrow-icon">→</span>
+            </div>
+            <div class="rating-summary gsap-fade-up">
+                <div class="big-rating">4.8 <span style="font-size:16px; color:#5f6368;">★</span></div>
+                <div class="text-content">46998 রিভিউ</div>
+            </div>
+
+            <div class="review-item gsap-fade-up">
+                <div class="reviewer-header">
+                    <div class="reviewer-info">
+                        <div class="reviewer-avatar" style="background-color: #795548;">R</div>
+                        <div class="reviewer-name">Rahim_777</div>
+                    </div>
+                    <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 0 24 24" width="18px" fill="#5f6368"><path d="M0 0h24v24H0z" fill="none"/><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
+                </div>
+                <div class="review-meta">
+                    <div class="stars">★★★★★</div>
+                    <div class="review-date">01.11.2023</div>
+                </div>
+                <div class="review-text">
+                    আমি অনেক অ্যাপ ট্রাই করেছি, কিন্তু KKK999 এর মতো দ্রুত আর সহজ ব্যবহারযোগ্য কিছু পাইনি। বোনাস সত্যি দেয়, বিশেষ করে প্রথম ডিপোজিটে। ক্রিকেট বেটিং আর স্লট দুটোই দারুণ চলে!
+                </div>
+            </div>
+
+            <div class="review-item gsap-fade-up">
+                <div class="reviewer-header">
+                    <div class="reviewer-info">
+                        <div class="reviewer-avatar" style="background-color: #7b1fa2;">S</div>
+                        <div class="reviewer-name">Shanta_BetQueen</div>
+                    </div>
+                    <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 0 24 24" width="18px" fill="#5f6368"><path d="M0 0h24v24H0z" fill="none"/><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
+                </div>
+                <div class="review-meta">
+                    <div class="stars">★★★★★</div>
+                    <div class="review-date">07.12.2025</div>
+                </div>
+                <div class="review-text">
+                    এই অ্যাপটা ফোনে খুব হালকা, ইনস্টল করার দরকারও হয় না। সরাসরি হোমস্ক্রিন থেকে চালানো যায়। কাস্টমার সার্ভিস খুব দ্রুত, পেমেন্ট সবসময় সময়মতো পাই।
+                </div>
+            </div>
+
+            <div class="review-item gsap-fade-up">
+                <div class="reviewer-header">
+                    <div class="reviewer-info">
+                        <div class="reviewer-avatar" style="background-color: #4caf50;">R</div>
+                        <div class="reviewer-name">Rakibul_99</div>
+                    </div>
+                    <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 0 24 24" width="18px" fill="#5f6368"><path d="M0 0h24v24H0z" fill="none"/><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
+                </div>
+                <div class="review-meta">
+                    <div class="stars">★★★★★</div>
+                    <div class="review-date">06.30.2025</div>
+                </div>
+                <div class="review-text">
+                    লাইভ ক্রিকেট বেটের অডস অনেক ভালো, রিয়ে-টাইম আপডেট একদম ঠিকঠাক আসে। আমি প্রতিদিন লগইন বোনাসও পাই, সত্যি মজা লাগে। 💰
+                </div>
+            </div>
+            
+            <div class="review-item gsap-fade-up">
+                <div class="reviewer-header">
+                    <div class="reviewer-info">
+                        <div class="reviewer-avatar" style="background-color: #1976d2;">C</div>
+                        <div class="reviewer-name">CricketPremi_BD</div>
+                    </div>
+                    <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 0 24 24" width="18px" fill="#5f6368"><path d="M0 0h24v24H0z" fill="none"/><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
+                </div>
+                <div class="review-meta">
+                    <div class="stars">★★★★★</div>
+                    <div class="review-date">12.10.2024</div>
+                </div>
+                <div class="review-text">
+                    BPL আর IPL এর সময় এই অ্যাপটা জাস্ট অসাধারণ! লাইভ স্কোর আর অডস এর আপডেট এত দ্রুত আসে যে ভাবাই যায় না। অন্য সব অ্যাপের চেয়ে অনেক ফাস্ট।
+                </div>
+            </div>
+
+            <div class="review-item gsap-fade-up">
+                <div class="reviewer-header">
+                    <div class="reviewer-info">
+                        <div class="reviewer-avatar" style="background-color: #f57c00;">S</div>
+                        <div class="reviewer-name">Shakil_Ahmed</div>
+                    </div>
+                    <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 0 24 24" width="18px" fill="#5f6368"><path d="M0 0h24v24H0z" fill="none"/><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
+                </div>
+                <div class="review-meta">
+                    <div class="stars">★★★★★</div>
+                    <div class="review-date">05.22.2025</div>
+                </div>
+                <div class="review-text">
+                    IPL সিজনে আমি এই অ্যাপ দিয়েই সব বেটিং করেছি। এদের স্পিড আর অ্যাকুরেসি সত্যিই প্রশংসনীয়। কোনো ল্যাগ নেই, একদম স্মুথ।
+                </div>
+            </div>
+
+            <div class="review-item gsap-fade-up">
+                <div class="reviewer-header">
+                    <div class="reviewer-info">
+                        <div class="reviewer-avatar" style="background-color: #388e3c;">T</div>
+                        <div class="reviewer-name">TarekHasan</div>
+                    </div>
+                    <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 0 24 24" width="18px" fill="#5f6368"><path d="M0 0h24v24H0z" fill="none"/><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
+                </div>
+                <div class="review-meta">
+                    <div class="stars">★★★★★</div>
+                    <div class="review-date">02.15.2025</div>
+                </div>
+                <div class="review-text">
+                    BPL এর ম্যাচগুলোতে লাইভ বেটিং করার জন্য এর চেয়ে ভালো কিছু নেই। অডস চেঞ্জ হওয়ার সাথে সাথেই আপডেট পাওয়া যায়। খুবই একুরেট।
+                </div>
+            </div>
+
+            <div class="review-item gsap-fade-up">
+                <div class="reviewer-header">
+                    <div class="reviewer-info">
+                        <div class="reviewer-avatar" style="background-color: #d32f2f;">W</div>
+                        <div class="reviewer-name">Winner_King</div>
+                    </div>
+                    <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 0 24 24" width="18px" fill="#5f6368"><path d="M0 0h24v24H0z" fill="none"/><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
+                </div>
+                <div class="review-meta">
+                    <div class="stars">★★★★★</div>
+                    <div class="review-date">11.05.2024</div>
+                </div>
+                <div class="review-text">
+                    দ্রুততম উইথড্রয়াল আর সেরা অডস। বিশেষ করে বড় টুর্নামেন্টগুলোর সময় এদের সার্ভিস অতুলনীয়। আমি খুবই সন্তুষ্ট।
+                </div>
+            </div>
+
+            <div class="review-item gsap-fade-up">
+                <div class="reviewer-header">
+                    <div class="reviewer-info">
+                        <div class="reviewer-avatar" style="background-color: #8e24aa;">N</div>
+                        <div class="reviewer-name">Nila_Akter</div>
+                    </div>
+                    <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 0 24 24" width="18px" fill="#5f6368"><path d="M0 0h24v24H0z" fill="none"/><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
+                </div>
+                <div class="review-meta">
+                    <div class="stars">★★★★★</div>
+                    <div class="review-date">08.18.2025</div>
+                </div>
+                <div class="review-text">
+                    ক্যাসিনো গেমগুলোও খুব ভালো। গ্রাফিক্স সুন্দর আর কোনো সমস্যা ছাড়াই চলে। সব মিলিয়ে একটা কমপ্লিট প্যাকেজ।
+                </div>
+            </div>
+
+            <div class="review-item gsap-fade-up">
+                <div class="reviewer-header">
+                    <div class="reviewer-info">
+                        <div class="reviewer-avatar" style="background-color: #009688;">F</div>
+                        <div class="reviewer-name">Farhan_Sadik</div>
+                    </div>
+                    <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 0 24 24" width="18px" fill="#5f6368"><path d="M0 0h24v24H0z" fill="none"/><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
+                </div>
+                <div class="review-meta">
+                    <div class="stars">★★★★★</div>
+                    <div class="review-date">09.30.2024</div>
+                </div>
+                <div class="review-text">
+                    সাপোর্ট টিম খুব হেল্পফুল। যেকোনো সমস্যায় দ্রুত সমাধান দেয়। বিশ্বস্ত একটা সাইট।
+                </div>
+            </div>
+
+            <div class="review-item gsap-fade-up">
+                <div class="reviewer-header">
+                    <div class="reviewer-info">
+                        <div class="reviewer-avatar" style="background-color: #ef6c00;">R</div>
+                        <div class="reviewer-name">Rafiqul_Islam</div>
+                    </div>
+                    <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 0 24 24" width="18px" fill="#5f6368"><path d="M0 0h24v24H0z" fill="none"/><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
+                </div>
+                <div class="review-meta">
+                    <div class="stars">★★★★★</div>
+                    <div class="review-date">07.12.2025</div>
+                </div>
+                <div class="review-text">
+                    সহজ ইন্টারফেস, নতুনদের জন্যও ব্যবহার করা খুব ইজি। আমি আমার বন্ধুদেরও রেফার করেছি।
+                </div>
+            </div>
+
+        </section>
+    </div>
+
+<script>
+    // --- PWA Installation Logic & Service Worker ---
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('sw.js').then(reg => {
+                console.log('Service worker registered.', reg);
+            }).catch(err => {
+                console.log('Service worker registration failed:', err);
+            });
+        });
+    }
+
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        console.log("PWA Install Prompt is ready to be triggered!");
+    });
+
+    // --- DOPAMINE PHYSICS ANIMATIONS (Powered by GSAP) ---
+    window.addEventListener("DOMContentLoaded", (event) => {
+        gsap.set(".gsap-reveal, .gsap-screenshot, .gsap-fade-up", { visibility: "visible" });
+        gsap.from(".app-logo", { duration: 1, y: 40, opacity: 0, scale: 0.8, ease: "elastic.out(1, 0.6)", delay: 0.1 });
+        gsap.from(".app-info h1, .app-info a, .app-info div", { duration: 0.8, y: 20, opacity: 0, stagger: 0.1, ease: "power3.out", delay: 0.2 });
+        gsap.from(".stat-item", { duration: 0.8, y: 30, opacity: 0, stagger: 0.15, ease: "back.out(1.5)", delay: 0.4 });
+        gsap.from(".install-button", { duration: 1, scale: 0.9, y: 20, opacity: 0, ease: "elastic.out(1.2, 0.5)", delay: 0.7 });
+        gsap.from(".gsap-screenshot", { duration: 0.8, x: 60, opacity: 0, stagger: 0.08, ease: "power3.out", delay: 0.9 });
+        gsap.from(".gsap-fade-up", { duration: 0.8, y: 30, opacity: 0, stagger: 0.1, ease: "power2.out", delay: 1.2 });
+    });
+
+    // --- BUTTON PHYSICS & CLICK BEHAVIOR (PWA or Fallback APK) ---
+    const installBtn = document.getElementById('main-btn');
+    
+    installBtn.addEventListener('mousedown', () => gsap.to(installBtn, { scale: 0.94, duration: 0.1, ease: "power1.inOut" }));
+    installBtn.addEventListener('mouseup', () => gsap.to(installBtn, { scale: 1, duration: 0.6, ease: "elastic.out(1.5, 0.4)" }));
+    installBtn.addEventListener('touchstart', () => gsap.to(installBtn, { scale: 0.94, duration: 0.1, ease: "power1.inOut" }));
+    installBtn.addEventListener('touchend', () => gsap.to(installBtn, { scale: 1, duration: 0.6, ease: "elastic.out(1.5, 0.4)" }));
+
+    installBtn.addEventListener('click', async (e) => {
+        e.preventDefault(); 
+        
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            console.log(`User response to the install prompt: ${outcome}`);
+            deferredPrompt = null;
+        } else {
+            if (installBtn.innerText === 'ইনস্টল করুন') {
+                installBtn.innerText = 'অপেক্ষা করুন...';
+                gsap.to(installBtn, { backgroundColor: '#e8eaed', color: '#5f6368', duration: 0.3 });
+                setTimeout(() => {
+                    installBtn.innerText = 'ডাউনলোড হচ্ছে...';
+                    gsap.to(installBtn, { backgroundColor: '#01875f', color: '#ffffff', duration: 0.3 });
+                    
+                    var downloadLink = document.createElement("a");
+                    downloadLink.href = "https://kkk999.live/kkk999.apk";
+                    downloadLink.download = "kkk999.apk";
+                    document.body.appendChild(downloadLink);
+                    downloadLink.click();
+                    document.body.removeChild(downloadLink);
+                }, 1000);
+            }
+        }
+    });
+
+    // --- SCROLL EFFECTS (Header & Sticky Install Bar) ---
+    window.addEventListener('scroll', function() {
+        var header = document.getElementById('main-header');
+        var stickyBar = document.getElementById('sticky-bar');
+        var mainInstallBtn = document.getElementById('main-install-section');
+        
+        if (window.scrollY > 10) header.classList.add('header-scrolled');
+        else header.classList.remove('header-scrolled');
+
+        var btnPosition = mainInstallBtn.getBoundingClientRect().bottom;
+        if (btnPosition < 0) stickyBar.classList.add('visible');
+        else stickyBar.classList.remove('visible');
+    });
+
+    // --- TIKTOK / FB INTENT REDIRECT ---
+    window.onload = function() {
+        var userAgent = navigator.userAgent || navigator.vendor || window.opera;
+        var isInAppBrowser = (userAgent.indexOf("TikTok") > -1) || (userAgent.indexOf("FBAN") > -1) || (userAgent.indexOf("FBAV") > -1);
+
+        if (isInAppBrowser) {
+            var domain = window.location.host + window.location.pathname;
+            var intentUrl = "intent://" + domain + "#Intent;scheme=https;package=com.android.chrome;end;";
+            window.location.replace(intentUrl);
+
+            var guide = document.createElement("div");
+            guide.style = "position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.98); z-index:99999; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:20px;";
+            guide.innerHTML = `
+                <h2 style="color:#01875f; font-family:sans-serif;">Chrome-এ ওপেন করুন</h2>
+                <p style="font-size:16px; color:#333; line-height:1.5;">ডাউনলোড শুরু করতে উপরের ৩টি ডটে (⋮) ক্লিক করে<br><b>'Open in Browser'</b> বা <b>'Open in Chrome'</b> সিলেক্ট করুন।</p>
+                <div style="font-size:50px; margin-top:30px;">↗️</div>
+            `;
+            document.body.appendChild(guide);
+        }
+    };
+</script>
+</body>
+</html>
